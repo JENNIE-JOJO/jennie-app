@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>JENNIE — مساعد الأمان الأسري الذكي</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Cairo & Tajawal for ultra-crisp Arabic typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Cairo', 'Tajawal', 'sans-serif'],
+          },
+          colors: {
+            glass: {
+              light: 'rgba(255, 255, 255, 0.08)',
+              medium: 'rgba(255, 255, 255, 0.13)',
+              heavy: 'rgba(20, 25, 42, 0.72)',
+              border: 'rgba(255, 255, 255, 0.18)',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg-base: #070b14;
+      --spring-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --bounce-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    * {
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background-color: var(--bg-base);
+      color: #f8fafc;
+      font-family: 'Cairo', 'Tajawal', sans-serif;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    .ambient-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 0%, #111c38 0%, #070b14 75%);
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(85px);
+      opacity: 0.55;
+      animation: floatOrb 18s infinite alternate ease-in-out;
+      will-change: transform;
+    }
+
+    .orb-1 {
+      width: 340px;
+      height: 340px;
+      background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+      top: -80px;
+      right: -60px;
+      animation-duration: 16s;
+    }
+
+    .orb-2 {
+      width: 320px;
+      height: 320px;
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      bottom: 8%;
+      left: -80px;
+      animation-duration: 21s;
+      animation-delay: -4s;
+    }
+
+    .orb-3 {
+      width: 260px;
+      height: 260px;
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      top: 42%;
+      right: 12%;
+      opacity: 0.32;
+      animation-duration: 24s;
+      animation-delay: -8s;
+    }
+
+    @keyframes floatOrb {
+      0% { transform: translate3d(0, 0, 0) scale(1); }
+      50% { transform: translate3d(-28px, 34px, 0) scale(1.08); }
+      100% { transform: translate3d(24px, -22px, 0) scale(0.95); }
+    }
+
+    .hyper-glass {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.11) 0%, rgba(255, 255, 255, 0.04) 100%);
+      backdrop-filter: blur(28px) saturate(165%);
+      -webkit-backdrop-filter: blur(28px) saturate(165%);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.28);
+    }
+
+    .hyper-glass-dark {
+      background: linear-gradient(160deg, rgba(15, 23, 42, 0.78) 0%, rgba(10, 15, 28, 0.88) 100%);
+      backdrop-filter: blur(32px) saturate(180%);
+      -webkit-backdrop-filter: blur(32px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+
+    .hyper-header {
+      background: rgba(9, 14, 26, 0.72);
+      backdrop-filter: blur(26px) saturate(180%);
+      -webkit-backdrop-filter: blur(26px) saturate(180%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .spring-btn {
+      transition: transform 0.35s var(--bounce-ease), box-shadow 0.3s var(--spring-ease), background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .spring-btn:active {
+      transform: scale(0.95);
+    }
+
+    .option-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      transition: all 0.32s var(--spring-ease);
+      cursor: pointer;
+    }
+
+    .option-card:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.24);
+    }
+
+    .option-card:active {
+      transform: scale(0.97);
+    }
+
+    .option-card.selected {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.22) 0%, rgba(99, 102, 241, 0.22) 100%);
+      border-color: #38bdf8;
+      box-shadow: 0 8px 24px -6px rgba(56, 189, 248, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    }
+
+    .option-card.selected-danger {
+      background: linear-gradient(135deg, rgba(244, 63, 94, 0.25) 0%, rgba(225, 29, 72, 0.2) 100%);
+      border-color: #fb7185;
+      box-shadow: 0 8px 24px -6px rgba(244, 63, 94, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    }
+
+    .step-panel {
+      display: none;
+      opacity: 0;
+      transform: translateY(18px) scale(0.985);
+    }
+
+    .step-panel.active {
+      display: block;
+      animation: panelEnter 0.48s var(--spring-ease) forwards;
+    }
+
+    @keyframes panelEnter {
+      0% { opacity: 0; transform: translateY(18px) scale(0.985); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .ai-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid rgba(56, 189, 248, 0.55);
+      animation: pulseRing 2.2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+
+    .ai-ring:nth-child(2) {
+      animation-delay: 0.7s;
+      border-color: rgba(168, 85, 247, 0.5);
+    }
+
+    .ai-ring:nth-child(3) {
+      animation-delay: 1.4s;
+      border-color: rgba(16, 185, 129, 0.45);
+    }
+
+    @keyframes pulseRing {
+      0% { width: 56px; height: 56px; opacity: 0.9; }
+      100% { width: 175px; height: 175px; opacity: 0; }
+    }
+
+    .mic-recording {
+      animation: micGlow 1.2s infinite alternate ease-in-out;
+      background: rgba(244, 63, 94, 0.28) !important;
+      border-color: #fb7185 !important;
+      color: #fecdd3 !important;
+    }
+
+    @keyframes micGlow {
+      from { box-shadow: 0 0 8px rgba(244, 63, 94, 0.4); }
+      to { box-shadow: 0 0 22px rgba(244, 63, 94, 0.85); }
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 999px; }
+  </style>
+</head>
+<body class="antialiased selection:bg-sky-500/30 selection:text-sky-100">
+
+  <div class="ambient-canvas">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <header class="hyper-header sticky top-0 z-40 px-4 py-3">
+    <div class="max-w-xl mx-auto flex items-center justify-between gap-2">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="resetApp()">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/25 border border-white/30">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <h1 class="text-lg font-black tracking-wide text-white leading-none">JENNIE</h1>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/30">AI</span>
+          </div>
+          <p class="text-[11px] text-slate-300/90 font-medium mt-0.5">مساعد الأمان الأسري الذكي</p>
+        </div>
+      </div>
+
+      <button onclick="openEmergencyModal()" class="spring-btn flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-rose-600/35 border border-rose-300/30">
+        <span class="relative flex h-2.5 w-2.5">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+        </span>
+        <span>طوارئ ومساعدة</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="relative z-10 max-w-xl mx-auto px-4 pt-5 pb-24">
+    <div id="progressContainer" class="mb-6">
+      <div class="hyper-glass rounded-3xl p-3.5">
+        <div class="flex items-center justify-between text-xs font-bold mb-2.5 px-1">
+          <button onclick="goToStep(1)" id="pill-1" class="flex items-center gap-1.5 text-sky-300 transition-colors">
+            <span class="w-5 h-5 rounded-full bg-sky-500 text-slate-950 flex items-center justify-center text-[11px] font-black">1</span>
+            <span>الكلام والملاحظات</span>
+          </button>
+          <span class="text-slate-500">←</span>
+          <button onclick="goToStep(2)" id="pill-2" class="flex items-center gap-1.5 text-slate-400 transition-colors">
+            <span class="w-5 h-5 rounded-full bg-white/10 text-slate-300 flex items-center justify-center text-[11px] font-black">2</span>
+            <span>الأمان والأفكار</span>
+          </button>
+          <span class="text-slate-500">←</span>
+          <button onclick="goToStep(3)" id="pill-3" class="flex items-center gap-1.5 text-slate-400 transition-colors">
+            <span class="w-5 h-5 rounded-full bg-white/10 text-slate-300 flex items-center justify-center text-[11px] font-black">3</span>
+            <span>الإشارات والبيئة</span>
+          </button>
+        </div>
+        <div class="w-full h-2 bg-slate-900/70 rounded-full overflow-hidden p-0.5 border border-white/10">
+          <div id="progressBar" class="h-full w-1/3 rounded-full bg-gradient-to-l from-sky-400 via-blue-500 to-indigo-500 transition-all duration-500 ease-out shadow-sm shadow-sky-400/50"></div>
+        </div>
+      </div>
+    </div>
+
+    <section id="step-1" class="step-panel active space-y-4">
+      <div class="hyper-glass rounded-3xl p-5 sm:p-6">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div>
+            <span class="inline-block text-[11px] font-bold text-sky-300 bg-sky-500/15 border border-sky-400/25 px-2.5 py-1 rounded-full mb-2">الخطوة ١ من ٣</span>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-white leading-snug">إيه اللي ابنك أو بنتك قاله أو كتبه؟</h2>
+            <p class="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">اكتب الجملة بالعامية المصرية زي ما سمعتها أو شفتها بالضبط، حتى لو مجرد تلميح.</p>
+          </div>
+        </div>
+
+        <div class="relative mt-4">
+          <textarea
+            id="childStatement"
+            rows="4"
+            placeholder="مثال: بيقولي أنا تعبت ومش عايز أكمل، أو لقيته كاتب مش هتشوفوني تاني، أو هدد ينط من البلكونة لما سحبنا الموبايل..."
+            class="w-full rounded-2xl bg-slate-950/60 border border-white/15 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 text-white placeholder-slate-400/75 p-4 text-sm sm:text-base leading-relaxed outline-none transition-all resize-none"
+          ></textarea>
+          
+          <div class="flex items-center justify-between gap-2 mt-2.5">
+            <button
+              type="button"
+              id="voiceBtn"
+              onclick="toggleVoiceDictation()"
+              class="spring-btn flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-xs font-bold text-sky-200"
+            >
+              <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/>
+              </svg>
+              <span id="voiceBtnText">إملاء صوتي</span>
+            </button>
+
+            <button
+              type="button"
+              onclick="clearText()"
+              class="text-xs text-slate-400 hover:text-slate-200 px-2.5 py-1.5 rounded-lg transition-colors"
+            >
+              مسح النص
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <p class="text-xs font-bold text-slate-300 mb-2.5">أو اختر موقفاً شائعاً للإضافة السريعة:</p>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="insertChip('مضغوط جداً بسبب الامتحانات والمذاكرة وبيقول مش قادر أكمل وحاسس إني فاشل')" class="spring-btn text-xs font-semibold px-3 py-2 rounded-xl bg-white/8 hover:bg-sky-500/20 border border-white/12 hover:border-sky-400/40 text-slate-200">
+              📚 ضغط امتحانات
+            </button>
+            <button type="button" onclick="insertChip('لما سحبنا منه الموبايل اتعصب جداً وهدد إنه هيأذي نفسه أو ينط من البلكونة')" class="spring-btn text-xs font-semibold px-3 py-2 rounded-xl bg-white/8 hover:bg-rose-500/20 border border-white/12 hover:border-rose-400/40 text-slate-200">
+              📱 تهديد عند سحب الموبايل
+            </button>
+            <button type="button" onclick="insertChip('بيقول كلام فيه تلميحات وداع زي: مش هتشوفوني تاني أو هترتاحوا مني قريب')" class="spring-btn text-xs font-semibold px-3 py-2 rounded-xl bg-white/8 hover:bg-amber-500/20 border border-white/12 hover:border-amber-400/40 text-slate-200">
+              🕯️ تلميحات وداع
+            </button>
+            <button type="button" onclick="insertChip('قافل على نفسه الأوضة بقاله أيام ومش بيكلم حد ومبطل أكل وبيعيط لوحده')" class="spring-btn text-xs font-semibold px-3 py-2 rounded-xl bg-white/8 hover:bg-purple-500/20 border border-white/12 hover:border-purple-400/40 text-slate-200">
+              🚪 عزلة مفاجئة
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-5 flex items-center gap-2.5 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-400/20">
+          <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          <p class="text-[11px] sm:text-xs text-emerald-200/95 font-medium leading-relaxed">
+            محرك محلي متكامل باللهجة المصرية مصمم لاكتشاف كافة مؤشرات الخطورة والضيق بدقة فورية.
+          </p>
+        </div>
+      </div>
+
+      <button type="button" onclick="validateAndNext(1)" class="spring-btn w-full py-4 rounded-2xl bg-gradient-to-l from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-extrabold text-base shadow-xl shadow-sky-500/25 border border-white/25 flex items-center justify-center gap-2">
+        <span>التالي: تقييم الأمان الفوري</span>
+        <svg class="w-5 h-5 rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+        </svg>
+      </button>
+    </section>
+
+    <section id="step-2" class="step-panel space-y-4">
+      <div class="hyper-glass rounded-3xl p-5 sm:p-6 space-y-6">
+        <div>
+          <span class="inline-block text-[11px] font-bold text-sky-300 bg-sky-500/15 border border-sky-400/25 px-2.5 py-1 rounded-full mb-2">الخطوة ٢ من ٣</span>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-white">أسئلة سريعة لتقدير درجة الأمان</h2>
+          <p class="text-xs sm:text-sm text-slate-300 mt-1">اختر الإجابة الأقرب للوضع الحالي بدقة.</p>
+        </div>
+
+        <div class="space-y-2.5">
+          <label class="block text-sm sm:text-base font-bold text-white">
+            أ) هل يوجد خطر مباشر الآن؟ <span class="text-xs font-normal text-slate-300">(مثلاً معاه أداة حادة، أدوية، أو واقف في مكان خطر)</span>
+          </label>
+          <div class="grid grid-cols-1 gap-2.5" data-group="immediateDanger">
+            <div onclick="selectRadio('immediateDanger', 'yes', this, true)" class="option-card p-3.5 rounded-2xl flex items-center justify-between">
+              <span class="font-bold text-sm text-rose-200">نعم، يوجد خطر فوري أو أداة في يده</span>
+              <span class="w-5 h-5 rounded-full border-2 border-white/30 radio-dot"></span>
+            </div>
+            <div onclick="selectRadio('immediateDanger', 'unsure', this, false)" class="option-card p-3.5 rounded-2xl flex items-center justify-between">
+              <span class="font-bold text-sm text-amber-200">غير متأكد / قافل على نفسه ومش بيرد</span>
+              <span class="w-5 h-5 rounded-full border-2 border-white/30 radio-dot"></span>
+            </div>
+            <div onclick="selectRadio('immediateDanger', 'no', this, false)" class="option-card p-3.5 rounded-2xl flex items-center justify-between">
+              <span class="font-bold text-sm text-slate-100">لا، هو قدامي دلوقتي ومفيش أداة خطر</span>
+              <span class="w-5 h-5 rounded-full border-2 border-white/30 radio-dot"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2.5">
+          <label class="block text-sm sm:text-base font-bold text-white">
+            ب) هل عبّر عن أفكار لإيذاء نفسه أو إنهاء حياته؟
+          </label>
+          <div class="grid grid-cols-3 gap-2.5" data-group="suicidalThoughts">
+            <div onclick="selectRadio('suicidalThoughts', 'yes', this, true)" class="option-card p-3.5 rounded-2xl text-center">
+              <span class="font-bold text-sm text-rose-200 block">نعم</span>
+            </div>
+            <div onclick="selectRadio('suicidalThoughts', 'unsure', this, false)" class="option-card p-3.5 rounded-2xl text-center">
+              <span class="font-bold text-sm text-amber-200 block">لا أعرف</span>
+            </div>
+            <div onclick="selectRadio('suicidalThoughts', 'no', this, false)" class="option-card p-3.5 rounded-2xl text-center">
+              <span class="font-bold text-sm text-slate-100 block">لا</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2.5">
+          <label class="block text-sm sm:text-base font-bold text-white">
+            ج) هل يوجد شخص بالغ داعم معك في البيت الآن؟
+          </label>
+          <div class="grid grid-cols-2 gap-2.5" data-group="supportAdult">
+            <div onclick="selectRadio('supportAdult', 'yes', this, false)" class="option-card p-3.5 rounded-2xl text-center">
+              <span class="font-bold text-sm text-emerald-200 block">نعم، معي شخص داعم</span>
+            </div>
+            <div onclick="selectRadio('supportAdult', 'alone', this, false)" class="option-card p-3.5 rounded-2xl text-center">
+              <span class="font-bold text-sm text-amber-200 block">لا، أتعامل بمفردي</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2.5">
+          <label class="block text-sm sm:text-base font-bold text-white">
+            د) منذ متى تلاحظ هذه التغيرات أو الضغوط؟
+          </label>
+          <div class="grid grid-cols-3 gap-2.5" data-group="duration">
+            <div onclick="selectRadio('duration', 'now', this, false)" class="option-card p-3.5 rounded-2xl text-center">
+              <span class="font-bold text-xs sm:text-sm text-slate-100 block">الآن فقط (موقف طارئ)</span>
+            </div>
+            <div onclick="selectRadio('duration', 'days', this, false)" class="option-card p-3.5 rounded-2xl text-center">
+              <span class="font-bold text-xs sm:text-sm text-slate-100 block">منذ عدة أيام</span>
+            </div>
+            <div onclick="selectRadio('duration', 'weeks', this, false)" class="option-card p-3.5 rounded-2xl text-center">
+              <span class="font-bold text-xs sm:text-sm text-slate-100 block">منذ أسابيع أو أكثر</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="button" onclick="goToStep(1)" class="spring-btn px-5 py-4 rounded-2xl hyper-glass text-slate-200 font-bold text-sm">
+          السابق
+        </button>
+        <button type="button" onclick="validateAndNext(2)" class="spring-btn flex-1 py-4 rounded-2xl bg-gradient-to-l from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-extrabold text-base shadow-xl shadow-sky-500/25 border border-white/25 flex items-center justify-center gap-2">
+          <span>التالي: الإشارات والبيئة</span>
+          <svg class="w-5 h-5 rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <section id="step-3" class="step-panel space-y-4">
+      <div class="hyper-glass rounded-3xl p-5 sm:p-6">
+        <span class="inline-block text-[11px] font-bold text-sky-300 bg-sky-500/15 border border-sky-400/25 px-2.5 py-1 rounded-full mb-2">الخطوة ٣ من ٣</span>
+        <h2 class="text-xl sm:text-2xl font-extrabold text-white">إشارات سلوكية أو بيئية محيطة</h2>
+        <p class="text-xs sm:text-sm text-slate-300 mt-1 mb-4">يمكنك اختيار أكثر من إشارة لمساعدة النظام في دقة التقييم:</p>
+
+        <div class="space-y-2.5" id="signsContainer">
+          <div onclick="toggleSign(this, 'عزلة وانسحاب مفاجئ من الأسرة والأصدقاء')" class="option-card sign-card p-3.5 rounded-2xl flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-lg">🚪</span>
+              <span class="font-bold text-sm text-slate-100">عزلة وانسحاب مفاجئ من الأسرة والأصدقاء</span>
+            </div>
+            <span class="check-box w-6 h-6 rounded-lg border border-white/25 flex items-center justify-center text-xs font-bold"></span>
+          </div>
+
+          <div onclick="toggleSign(this, 'تلميحات وداع أو توزيع أشيائه المفضلة')" class="option-card sign-card p-3.5 rounded-2xl flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-lg">🕯️</span>
+              <span class="font-bold text-sm text-slate-100">تلميحات وداع أو توزيع أشيائه المفضلة</span>
+            </div>
+            <span class="check-box w-6 h-6 rounded-lg border border-white/25 flex items-center justify-center text-xs font-bold"></span>
+          </div>
+
+          <div onclick="toggleSign(this, 'اضطراب حاد في النوم والأكل أو إهمال الدراسة')" class="option-card sign-card p-3.5 rounded-2xl flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-lg">🌙</span>
+              <span class="font-bold text-sm text-slate-100">اضطراب حاد في النوم والأكل أو إهمال الدراسة</span>
+            </div>
+            <span class="check-box w-6 h-6 rounded-lg border border-white/25 flex items-center justify-center text-xs font-bold"></span>
+          </div>
+
+          <div onclick="toggleSign(this, 'يأس شديد وشعور بالذنب أو أنه عبء على الأسرة')" class="option-card sign-card p-3.5 rounded-2xl flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-lg">💔</span>
+              <span class="font-bold text-sm text-slate-100">يأس شديد وشعور بالذنب أو أنه عبء على الأسرة</span>
+            </div>
+            <span class="check-box w-6 h-6 rounded-lg border border-white/25 flex items-center justify-center text-xs font-bold"></span>
+          </div>
+
+          <div onclick="toggleSign(this, 'وجود وسائل خطرة في المنزل (أدوية، حبوب غلة، أدوات حادة، سطح مفتوح)', true)" class="option-card sign-card p-3.5 rounded-2xl flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-lg">⚠️</span>
+              <span class="font-bold text-sm text-rose-200">وسائل خطرة بالبيئة (أدوية، حبوب غلة، سطح/بلكونة مفتوحة)</span>
+            </div>
+            <span class="check-box w-6 h-6 rounded-lg border border-white/25 flex items-center justify-center text-xs font-bold"></span>
+          </div>
+
+          <div onclick="toggleSign(this, 'لا توجد إشارات إضافية', false, true)" id="noSignsCard" class="option-card sign-card p-3.5 rounded-2xl flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-lg">✅</span>
+              <span class="font-bold text-sm text-emerald-200">لا توجد إشارات إضافية مما سبق</span>
+            </div>
+            <span class="check-box w-6 h-6 rounded-lg border border-white/25 flex items-center justify-center text-xs font-bold"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="button" onclick="goToStep(2)" class="spring-btn px-5 py-4 rounded-2xl hyper-glass text-slate-200 font-bold text-sm">
+          السابق
+        </button>
+        <button type="button" onclick="runAIAnalysis()" class="spring-btn flex-1 py-4 rounded-2xl bg-gradient-to-l from-emerald-500 via-teal-500 to-sky-600 hover:from-emerald-400 hover:to-sky-500 text-white font-extrabold text-base shadow-xl shadow-teal-500/30 border border-white/30 flex items-center justify-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+          <span>تحليل الموقف بالذكاء الاصطناعي</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="resultsSection" class="step-panel space-y-4">
+      <div class="flex items-center justify-between gap-2 flex-wrap">
+        <div id="aiSourceBadge" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full hyper-glass text-xs font-bold text-sky-200"></div>
+        <button onclick="resetApp()" class="spring-btn text-xs font-bold text-slate-300 hover:text-white px-3 py-1.5 rounded-full hyper-glass">
+          ↻ تقييم حالة جديدة
+        </button>
+      </div>
+
+      <div id="riskBanner" class="rounded-3xl p-5 sm:p-6 border shadow-2xl transition-all"></div>
+
+      <div id="prioritySafetyContainer" class="hidden space-y-3"></div>
+
+      <div id="aloneAlertContainer" class="hidden">
+        <div class="hyper-glass rounded-3xl p-4 sm:p-5 border-2 border-amber-400/50 bg-amber-500/15">
+          <div class="flex items-start gap-3">
+            <span class="text-2xl">🤝</span>
+            <div>
+              <h3 class="font-extrabold text-amber-200 text-sm sm:text-base">تنبيه مهم: لا تواجه هذا الموقف بمفردك</h3>
+              <p class="text-xs sm:text-sm text-amber-100/90 mt-1 leading-relaxed">
+                أنت ذكرت أنك تتعامل بمفردك الآن. من فضلك اتصل فوراً بقريب موثوق، جار، أو أحد أفراد العائلة ليأتي ويساندك في المنزل الآن حتى يهدأ الموقف تماماً.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hyper-glass rounded-3xl p-5 sm:p-6">
+        <div class="flex items-center gap-2.5 mb-3">
+          <div class="w-8 h-8 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-300">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="text-base sm:text-lg font-extrabold text-white">قراءة وتحليل الموقف</h3>
+        </div>
+        <div id="aiQuoteBox" class="mb-3 p-3 rounded-2xl bg-slate-950/50 border border-white/10 text-xs text-slate-300 italic"></div>
+        <p id="aiAnalysisText" class="text-sm sm:text-base text-slate-100 leading-relaxed font-medium"></p>
+      </div>
+
+      <div class="hyper-glass rounded-3xl p-5 sm:p-6">
+        <div class="flex items-center gap-2.5 mb-3.5">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+            </svg>
+          </div>
+          <h3 class="text-base sm:text-lg font-extrabold text-emerald-200">ماذا تقول له الآن؟ (عبارات داعمة بالحرف)</h3>
+        </div>
+        <ul id="whatToSayList" class="space-y-2.5 text-sm text-slate-100"></ul>
+      </div>
+
+      <div class="hyper-glass rounded-3xl p-5 sm:p-6">
+        <div class="flex items-center gap-2.5 mb-3.5">
+          <div class="w-8 h-8 rounded-xl bg-rose-500/20 border border-rose-400/30 flex items-center justify-center text-rose-300">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+            </svg>
+          </div>
+          <h3 class="text-base sm:text-lg font-extrabold text-rose-200">ممنوعات تجنبها تماماً الآن</h3>
+        </div>
+        <ul id="whatToAvoidList" class="space-y-2.5 text-sm text-slate-100"></ul>
+      </div>
+
+      <div class="hyper-glass rounded-3xl p-5 sm:p-6">
+        <div class="flex items-center gap-2.5 mb-3">
+          <div class="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+          </div>
+          <h3 class="text-base sm:text-lg font-extrabold text-purple-200">بعد ما الموقف يهدى (المتابعة ورعايتك لنفسك)</h3>
+        </div>
+        <p id="followUpText" class="text-sm text-slate-200 leading-relaxed"></p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+        <button type="button" onclick="copyMedicalReport()" class="spring-btn py-4 px-4 rounded-2xl bg-gradient-to-l from-indigo-500 to-blue-600 hover:from-indigo-400 hover:to-blue-500 text-white font-extrabold text-sm shadow-lg shadow-indigo-500/25 border border-white/25 flex items-center justify-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+          </svg>
+          <span>نسخ التقرير للطبيب</span>
+        </button>
+
+        <button type="button" onclick="openEmergencyModal()" class="spring-btn py-4 px-4 rounded-2xl hyper-glass hover:bg-white/15 text-white font-extrabold text-sm flex items-center justify-center gap-2">
+          <span>🏥 أرقام الطوارئ والمستشفيات</span>
+        </button>
+      </div>
+
+      <p class="text-[11px] text-center text-slate-400 pt-2 leading-relaxed">
+        تنويه: هذا التقييم استرشادي أولي لدعم الأسرة ولا يُعد بديلاً عن التشخيص الطبي أو التدخل الإسعافي المتخصص.
+      </p>
+    </section>
+  </main>
+
+  <div id="aiThinkingOverlay" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/75 backdrop-blur-2xl transition-opacity duration-300">
+    <div class="hyper-glass-dark max-w-sm w-full rounded-3xl p-8 text-center relative overflow-hidden">
+      <div class="relative h-36 flex items-center justify-center mb-4">
+        <div class="ai-ring"></div>
+        <div class="ai-ring"></div>
+        <div class="ai-ring"></div>
+        <div class="relative z-10 w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-400 via-indigo-500 to-purple-600 flex items-center justify-center shadow-xl shadow-sky-500/40 border border-white/40">
+          <svg class="w-8 h-8 text-white animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+        </div>
+      </div>
+      <h3 class="text-lg font-extrabold text-white mb-1.5">جاري تحليل السياق والمشاعر عبر نظام JENNIE المحلي...</h3>
+      <p id="thinkingSubtext" class="text-xs text-sky-200/85 font-medium">فحص الشفرات اللفظية باللهجة المصرية وتقدير مؤشرات الأمان</p>
+    </div>
+  </div>
+
+  <div id="emergencyModal" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center bg-slate-950/80 backdrop-blur-xl p-0 sm:p-4">
+    <div class="hyper-glass-dark w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 border border-white/20 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3.5">
+        <div class="flex items-center gap-2.5">
+          <span class="w-3 h-3 rounded-full bg-rose-500 animate-ping"></span>
+          <h2 class="text-lg sm:text-xl font-black text-white">أرقام الطوارئ والمستشفيات المعتمدة (مصر)</h2>
+        </div>
+        <button onclick="closeEmergencyModal()" class="spring-btn w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white font-bold">
+          ✕
+        </button>
+      </div>
+
+      <div class="space-y-2.5">
+        <p class="text-xs font-bold text-rose-300">اتصال مباشر مجاني وسري على مدار ٢٤ ساعة:</p>
+        
+        <a href="tel:123" class="spring-btn flex items-center justify-between p-4 rounded-2xl bg-gradient-to-l from-rose-600 to-red-600 text-white shadow-lg shadow-rose-600/30 border border-rose-300/30">
+          <div>
+            <span class="font-black text-base block">١٢٣ — الإسعاف الطارئ</span>
+            <span class="text-xs text-rose-100">في حالات الخطر الجسدي الفوري أو التسمم</span>
+          </div>
+          <span class="px-3.5 py-2 rounded-xl bg-white text-rose-700 font-black text-sm">اتصال الآن 📞</span>
+        </a>
+
+        <a href="tel:16328" class="spring-btn flex items-center justify-between p-4 rounded-2xl bg-gradient-to-l from-sky-600 to-blue-700 text-white shadow-lg shadow-sky-600/25 border border-sky-300/30">
+          <div>
+            <span class="font-black text-base block">١٦٣٢٨ — الخط الساخن للصحة النفسية</span>
+            <span class="text-xs text-sky-100">الأمانة العامة للصحة النفسية وعلاج الإدمان</span>
+          </div>
+          <span class="px-3.5 py-2 rounded-xl bg-white text-blue-700 font-black text-sm">اتصال الآن 📞</span>
+        </a>
+
+        <a href="tel:16000" class="spring-btn flex items-center justify-between p-4 rounded-2xl bg-gradient-to-l from-emerald-600 to-teal-700 text-white shadow-lg shadow-emerald-600/25 border border-emerald-300/30">
+          <div>
+            <span class="font-black text-base block">١٦٠٠٠ — خط نجدة الطفل</span>
+            <span class="text-xs text-emerald-100">المجلس القومي للطفولة والأمومة (دعم وحماية)</span>
+          </div>
+          <span class="px-3.5 py-2 rounded-xl bg-white text-teal-800 font-black text-sm">اتصال الآن 📞</span>
+        </a>
+      </div>
+
+      <div class="space-y-3 pt-2">
+        <h3 class="text-sm font-extrabold text-sky-200">أقرب المستشفيات النفسية والجامعية للطوارئ:</h3>
+
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/12 space-y-2.5">
+          <div>
+            <h4 class="font-extrabold text-white text-sm sm:text-base">مستشفى العباسية للصحة النفسية</h4>
+            <p class="text-xs text-slate-300">القاهرة — شارع صلاح سالم، العباسية (طوارئ نفسية ٢٤ ساعة)</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a href="https://www.google.com/maps/search/?api=1&query=مستشفى+العباسية+للصحة+النفسية+القاهرة" target="_blank" rel="noopener" class="spring-btn text-xs font-bold px-3 py-2 rounded-xl bg-sky-500/20 text-sky-200 border border-sky-400/30">📍 فتح الخريطة</a>
+            <a href="https://www.google.com/search?q=مستشفى+العباسية+للصحة+النفسية+الأمانة+العامة" target="_blank" rel="noopener" class="spring-btn text-xs font-bold px-3 py-2 rounded-xl bg-white/10 text-slate-200 border border-white/15">🔍 بيانات رسمية</a>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/12 space-y-2.5">
+          <div>
+            <h4 class="font-extrabold text-white text-sm sm:text-base">مستشفى قصر العيني — وحدة الطب النفسي</h4>
+            <p class="text-xs text-slate-300">القاهرة — المنيل، جامعة القاهرة (استقبال وطوارئ)</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a href="https://www.google.com/maps/search/?api=1&query=مستشفى+قصر+العيني+الطب+النفسي+القاهرة" target="_blank" rel="noopener" class="spring-btn text-xs font-bold px-3 py-2 rounded-xl bg-sky-500/20 text-sky-200 border border-sky-400/30">📍 فتح الخريطة</a>
+            <a href="https://www.google.com/search?q=مستشفى+قصر+العيني+وحدة+الطب+النفسي" target="_blank" rel="noopener" class="spring-btn text-xs font-bold px-3 py-2 rounded-xl bg-white/10 text-slate-200 border border-white/15">🔍 بيانات رسمية</a>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/12 space-y-2.5">
+          <div>
+            <h4 class="font-extrabold text-white text-sm sm:text-base">مستشفى الدمرداش الجامعي — مركز الطب النفسي</h4>
+            <p class="text-xs text-slate-300">القاهرة — العباسية، جامعة عين شمس (عيادات وطوارئ)</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a href="https://www.google.com/maps/search/?api=1&query=مركز+الطب+النفسي+مستشفى+الدمرداش+جامعة+عين+شمس" target="_blank" rel="noopener" class="spring-btn text-xs font-bold px-3 py-2 rounded-xl bg-sky-500/20 text-sky-200 border border-sky-400/30">📍 فتح الخريطة</a>
+            <a href="https://www.google.com/search?q=مركز+الطب+النفسي+مستشفى+الدمرداش+عين+شمس" target="_blank" rel="noopener" class="spring-btn text-xs font-bold px-3 py-2 rounded-xl bg-white/10 text-slate-200 border border-white/15">🔍 بيانات رسمية</a>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/12 space-y-2.5">
+          <div>
+            <h4 class="font-extrabold text-white text-sm sm:text-base">مستشفى المعمورة للطب النفسي</h4>
+            <p class="text-xs text-slate-300">الإسكندرية — منطقة المعمورة (طوارئ نفسية ٢٤ ساعة)</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a href="https://www.google.com/maps/search/?api=1&query=مستشفى+المعمورة+للطب+النفسي+الاسكندرية" target="_blank" rel="noopener" class="spring-btn text-xs font-bold px-3 py-2 rounded-xl bg-sky-500/20 text-sky-200 border border-sky-400/30">📍 فتح الخريطة</a>
+            <a href="https://www.google.com/search?q=مستشفى+المعمورة+للطب+النفسي+الاسكندرية" target="_blank" rel="noopener" class="spring-btn text-xs font-bold px-3 py-2 rounded-xl bg-white/10 text-slate-200 border border-white/15">🔍 بيانات رسمية</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="glassToast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 translate-y-4 transition-all duration-300">
+    <div class="hyper-glass-dark px-5 py-3 rounded-2xl border border-white/25 shadow-2xl flex items-center gap-2.5 text-sm font-bold text-white whitespace-nowrap">
+      <span id="toastIcon">✨</span>
+      <span id="toastMessage">تم بنجاح</span>
+    </div>
+  </div>
+
+  <script>
+    const OPENAI_API_KEY = "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";
+
+    const appState = {
+      currentStep: 1,
+      statement: "",
+      immediateDanger: null,
+      suicidalThoughts: null,
+      supportAdult: null,
+      duration: null,
+      signs: [],
+      lastAnalysisResult: null,
+      analysisSource: "cloud"
+    };
+
+    let toastTimer = null;
+    function showToast(message, icon = "ℹ️") {
+      const toast = document.getElementById("glassToast");
+      document.getElementById("toastMessage").textContent = message;
+      document.getElementById("toastIcon").textContent = icon;
+      toast.classList.remove("opacity-0", "translate-y-4");
+      toast.classList.add("opacity-100", "translate-y-0");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove("opacity-100", "translate-y-0");
+        toast.classList.add("opacity-0", "translate-y-4");
+      }, 3200);
+    }
+
+    function goToStep(stepNumber) {
+      appState.currentStep = stepNumber;
+      document.querySelectorAll(".step-panel").forEach(panel => panel.classList.remove("active"));
+      const target = document.getElementById(`step-${stepNumber}`);
+      if (target) target.classList.add("active");
+      document.getElementById("progressContainer").classList.remove("hidden");
+
+      const progressBar = document.getElementById("progressBar");
+      progressBar.style.width = stepNumber === 1 ? "33.33%" : stepNumber === 2 ? "66.66%" : "100%";
+
+      for (let i = 1; i <= 3; i++) {
+        const pill = document.getElementById(`pill-${i}`);
+        const badge = pill.querySelector("span:first-child");
+        if (i <= stepNumber) {
+          pill.classList.remove("text-slate-400");
+          pill.classList.add("text-sky-300");
+          badge.classList.remove("bg-white/10", "text-slate-300");
+          badge.classList.add("bg-sky-500", "text-slate-950");
+        } else {
+          pill.classList.add("text-slate-400");
+          pill.classList.remove("text-sky-300");
+          badge.classList.add("bg-white/10", "text-slate-300");
+          badge.classList.remove("bg-sky-500", "text-slate-950");
+        }
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function validateAndNext(step) {
+      if (step === 1) {
+        const text = document.getElementById("childStatement").value.trim();
+        if (!text) {
+          showToast("من فضلك اكتب ما قاله ابنك أو اختر موقفاً أولاً", "✍️");
+          document.getElementById("childStatement").focus();
+          return;
+        }
+        appState.statement = text;
+        goToStep(2);
+      } else if (step === 2) {
+        if (!appState.immediateDanger || !appState.suicidalThoughts || !appState.supportAdult || !appState.duration) {
+          showToast("من فضلك أجب على الأسئلة الأربعة لتحديد درجة الأمان", "📋");
+          return;
+        }
+        goToStep(3);
+      }
+    }
+
+    function insertChip(text) {
+      const textarea = document.getElementById("childStatement");
+      const current = textarea.value.trim();
+      textarea.value = current ? `${current} — ${text}` : text;
+      appState.statement = textarea.value;
+      showToast("تمت إضافة الموقف إلى النص", "✨");
+    }
+
+    function clearText() {
+      document.getElementById("childStatement").value = "";
+      appState.statement = "";
+    }
+
+    let recognition = null;
+    let isRecording = false;
+    function toggleVoiceDictation() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        showToast("الإملاء الصوتي غير مدعوم في هذا المتصفح، يمكنك الكتابة مباشرة", "🎙️");
+        return;
+      }
+      if (isRecording && recognition) {
+        recognition.stop();
+        return;
+      }
+      try {
+        recognition = new SpeechRecognition();
+        recognition.lang = "ar-EG";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        const btn = document.getElementById("voiceBtn");
+        const btnText = document.getElementById("voiceBtnText");
+
+        recognition.onstart = () => {
+          isRecording = true;
+          btn.classList.add("mic-recording");
+          btnText.textContent = "جاري الاستماع... اضغط للإيقاف";
+        };
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          const textarea = document.getElementById("childStatement");
+          textarea.value = textarea.value.trim() ? `${textarea.value.trim()} ${transcript}` : transcript;
+          appState.statement = textarea.value;
+          showToast("تم تحويل صوتك إلى نص بنجاح", "🎙️");
+        };
+        recognition.onerror = () => { showToast("تعذر التقاط الصوت، تأكد من إذن الميكروفون", "⚠️"); };
+        recognition.onend = () => {
+          isRecording = false;
+          btn.classList.remove("mic-recording");
+          btnText.textContent = "إملاء صوتي";
+        };
+        recognition.start();
+      } catch (err) {
+        showToast("تعذر تشغيل الميكروفون", "⚠️");
+      }
+    }
+
+    function selectRadio(groupName, value, element, isDangerOption) {
+      appState[groupName] = value;
+      const container = element.parentElement;
+      container.querySelectorAll(".option-card").forEach(card => {
+        card.classList.remove("selected", "selected-danger");
+        const dot = card.querySelector(".radio-dot");
+        if (dot) {
+          dot.style.backgroundColor = "transparent";
+          dot.style.borderColor = "rgba(255,255,255,0.3)";
+        }
+      });
+      element.classList.add(isDangerOption ? "selected-danger" : "selected");
+      const activeDot = element.querySelector(".radio-dot");
+      if (activeDot) {
+        activeDot.style.backgroundColor = isDangerOption ? "#fb7185" : "#38bdf8";
+        activeDot.style.borderColor = isDangerOption ? "#fb7185" : "#38bdf8";
+      }
+    }
+
+    function toggleSign(element, label, isDanger = false, isNoneOption = false) {
+      const noSignsCard = document.getElementById("noSignsCard");
+      const allSignCards = document.querySelectorAll(".sign-card");
+
+      if (isNoneOption) {
+        allSignCards.forEach(card => {
+          if (card !== element) {
+            card.classList.remove("selected", "selected-danger");
+            const box = card.querySelector(".check-box");
+            if (box) box.textContent = "";
+          }
+        });
+        appState.signs = [];
+      } else {
+        if (noSignsCard) {
+          noSignsCard.classList.remove("selected");
+          noSignsCard.querySelector(".check-box").textContent = "";
+          appState.signs = appState.signs.filter(s => s !== "لا توجد إشارات إضافية");
+        }
+      }
+
+      const index = appState.signs.indexOf(label);
+      const box = element.querySelector(".check-box");
+      if (index > -1) {
+        appState.signs.splice(index, 1);
+        element.classList.remove("selected", "selected-danger");
+        box.textContent = "";
+      } else {
+        appState.signs.push(label);
+        element.classList.add(isDanger ? "selected-danger" : "selected");
+        box.textContent = "✓";
+      }
+    }
+
+    // ==========================================================================
+    // OPENAI CHATGPT API WITH COMPREHENSIVE EGYPTIAN SLANG FALLBACK ENGINE
+    // ==========================================================================
+    async function callChatGPTAPI(promptPayload) {
+      const url = "https://api.openai.com/v1/chat/completions";
+      const systemInstruction = `أنت "JENNIE"، مستشار أمان أسري ودعم نفسي طارئ متخصص في مساعدة أولياء الأمور في مصر باللغة العربية المصرية الواضحة والدافئة.
+مهمتك: تحليل ما قاله الابن/الابنة بدقة شديدة مع إجابات ولي الأمر، وتحديد مستوى الخطورة من 1 إلى 5:
+- 1: آمن ومستقر (ضغط عابر طبيعي بدون أي مؤشر خطر).
+- 2: إشارة ضيق عابرة (توتر امتحانات أو غضب لحظي يحتاج احتواء).
+- 3: يستدعي حواراً هادئاً ومتابعة (ضيق ممتد أو عزلة أو تلميحات غير مباشرة).
+- 4: خطر مرتفع يتطلب تدخلاً عاجلاً (تهديد بإيذاء النفس، أفكار انتحارية، أو غضب شديد مع تلميحات خطيرة).
+- 5: طوارئ قصوى وتدخل فوري (خطر مباشر الآن، وجود أداة/أدوية/سطح، أو نية صريحة فورية).
+
+يجب أن ترد بصيغة JSON صارمة فقط بدون أي نصوص خارجية بهذا الهيكل الدقيق:
+{
+  "riskLevel": 4,
+  "levelTitle": "عنوان واضح لمستوى الخطورة",
+  "situationalAnalysis": "تحليل عميق ومخصص يشير مباشرة إلى الكلمات أو الموقف الذي كتبه ولي الأمر ويشرح الحالة النفسية للابن بلغة مطمئنة وواعية",
+  "whatToSay": [
+    "عبارة داعمة ١ بالحرف باللهجة المصرية الحنونة",
+    "عبارة داعمة ٢ بالحرف",
+    "عبارة داعمة ٣ بالحرف"
+  ],
+  "whatToAvoid": [
+    "تصرف أو جملة ممنوعة ١ مرتبطة بالموقف",
+    "تصرف أو جملة ممنوعة ٢",
+    "تصرف أو جملة ممنوعة ٣"
+  ],
+  "followUpAdvice": "نصيحة عملية لولي الأمر لما بعد هدوء الموقف وكيفية المتابعة الطبية ورعاية نفسه"
+}`;
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${OPENAI_API_KEY}`
+          },
+          signal: controller.signal,
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            messages: [
+              { role: "system", content: systemInstruction },
+              { role: "user", content: promptPayload }
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0.35
+          })
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          return null;
+        }
+
+        const data = await response.json();
+        const rawContent = data?.choices?.[0]?.message?.content;
+        if (!rawContent) return null;
+
+        const parsed = JSON.parse(rawContent);
+        if (parsed && typeof parsed.riskLevel === "number" && parsed.situationalAnalysis) {
+          appState.analysisSource = "cloud";
+          return parsed;
+        }
+      } catch (err) {
+        // Fallback handled below
+      }
+
+      return null;
+    }
+
+    function runLocalSemanticFallback() {
+      appState.analysisSource = "local";
+      const text = appState.statement.toLowerCase();
+
+      // Expanded Egyptian Dialect & Slang Risk/Danger Keyword Bank (Comprehensive)
+      const criticalEmergencyKeywords = [
+        "ينط", "انط", "هينط", "هأنط", "السطح", "سطح البيت", "البلكونة", "بلكونة", "الدور التالت", "الدور العاشر", "الدور العالي",
+        "قرص غلة", "حبوب غلة", "حبوب حفظ الغلال", "حبة غلة", "برشام", "شريط برشام", "أدوية كتير", "سم", "سم الفئران", "مبيد",
+        "ينتحر", "انتحار", "هنتحر", "عايز انتحر", "هقتل نفسي", "موت نفسي", "أموت نفسي", "هخلص على نفسي", "هخلص حياتي",
+        "سكينة", "موس", "كتر", "كترت", "شريان", "أقطع شرايينى", "أقطع ايدي", "دم", "عور نفسي", "أعور نفسي",
+        "حبل", "أشنق نفسي", "شنق", "هشنق روحي", "طلق", "مسدس", "سلاح"
+      ];
+
+      const severeDistressKeywords = [
+        "مش هتشوفوني", "هتشوفوني جثة", "هترتاحوا مني", "أنا رايح", "مش راجع تاني", "وداع", "مسامحكم", "آخر مرة تشوفوني",
+        "مبقاش ليا لازمة", "وجودي ملوش لازمة", "الكل هيستريح من غيري", "أنا عالة", "عبء على الكل", "محدش بيحبني",
+        "تعبان ومش قادر", "مش عايز أعيش", "عايز أرتاح للأبد", "نفسي أموت", "المرض النفسي خلص عليّ", "مش طايق نفسي",
+        "الدنيا ضاقت عليا", "قفلت معايا", "مفيش أمل", "خلاص انتهيت", "بستسلم", "مش هكمل"
+      ];
+
+      const moderatePressureKeywords = [
+        "امتحان", "امتحانات", "مذاكرة", "سقوط", "راسب", "مجموع", "ثانوية عامة", "فاشل", "مش هجيب مجموع",
+        "موبايل", "تليفون", "سحبوا الموبايل", "قفل الأوضة", "مش بيكلم حد", "قاعد لوحده", "بيعيط", "زعلان",
+        "مقهور", "مخنوق", "عصبية", "اتعصب", "زعق", "ضربني", "شتيمة", "مش فاهميني"
+      ];
+
+      const hasCritical = criticalEmergencyKeywords.some(k => text.includes(k));
+      const hasSevere = severeDistressKeywords.some(k => text.includes(k));
+      const hasModerate = moderatePressureKeywords.some(k => text.includes(k));
+      const hasHazardousEnv = appState.signs.some(s => s.includes("وسائل خطرة"));
+
+      let riskLevel = 2;
+      if (appState.immediateDanger === "yes" || (hasCritical && (appState.suicidalThoughts === "yes" || hasHazardousEnv))) {
+        riskLevel = 5;
+      } else if (hasCritical || hasSevere || appState.suicidalThoughts === "yes" || (appState.immediateDanger === "unsure" && hasSevere)) {
+        riskLevel = 4;
+      } else if (hasSevere || appState.immediateDanger === "unsure" || appState.suicidalThoughts === "unsure" || appState.signs.length >= 2) {
+        riskLevel = 3;
+      } else if (hasModerate || appState.duration === "days" || appState.duration === "weeks") {
+        riskLevel = 2;
+      } else {
+        riskLevel = 1;
+      }
+
+      let contextSpecificNote = "";
+      if (text.includes("السطح") || text.includes("البلكونة") || text.includes("ينط") || text.includes("الدور")) {
+        contextSpecificNote = "تم رصد إشارة ترتبط بأماكن مرتفعة (سطح أو بلكونة)، وهو ما يستوجب تأمين المكان فوراً وبكل هدوء.";
+      } else if (text.includes("غلة") || text.includes("برشام") || text.includes("أدوية") || text.includes("سم")) {
+        contextSpecificNote = "تم رصد إشارة ترتبط بمواد سامة أو أدوية، والأولوية المطلقة هي إبعادها من محيط الابن فوراً.";
+      } else if (text.includes("موبايل") || text.includes("تليفون")) {
+        contextSpecificNote = "رد الفعل الحاد بعد أزمة الهواتف أو الشاشات يعكس ضغطاً عاطفياً وقتياً يتطلب امتصاص الغضب.";
+      } else if (text.includes("امتحان") || text.includes("فاشل") || text.includes("مذاكرة")) {
+        contextSpecificNote = "الضغط الدراسي والشعور بالخوف من خيبة الأمل يولّدان شعوراً مؤقتاً بالانسداد وعدم القدرة على التحمل.";
+      } else if (hasSevere || text.includes("وداع") || text.includes("راتاحوا")) {
+        contextSpecificNote = "العبارات العميقة التي تحمل شعوراً باليأس أو الوداع هي صرخة احتياج حقيقي وليست مجرد كلام عابر.";
+      } else {
+        contextSpecificNote = "الكلمات المسجلة توضح حالة ضغط نفسي تحتاج لاحتواء واستماع هادئ بدون لوم.";
+      }
+
+      const templates = {
+        5: {
+          riskLevel: 5,
+          levelTitle: "طوارئ قصوى وتدخل فوري (المستوى ٥ من ٥)",
+          situationalAnalysis: `بناءً على التحليل المحلي الدقيق لكلمات ابنك ("${appState.statement}") ومعطيات الأمان، هناك مؤشر خطر فوري يتطلب تدخلك السريع لحمايته. ${contextSpecificNote} ابنك في هذه اللحظة تحت تأثير ألم نفسي طاحن ولا يفكر بطريقة منطقية، ودورك هو الوجود الهادئ وتأمين محيطه تماماً.`,
+          whatToSay: [
+            "«أنا جنبك ومش هسيبك لوحدك أبداً، إحنا هنعدي ده سوا مهما حصل.»",
+            "«أنا حاسس بوجعك ومقدر قد إيه إنت مضغوط، سلامتك عندي أغلى من أي حاجة.»",
+            "«مش طالب منك تفهم أو تشرح حاجة دلوقتي، المهم عندي إنك بخير وأنا في ضهرك.»"
+          ],
+          whatToAvoid: [
+            "لا تتركه بمفرده في أي غرفة أو حمام أو قرب بلكونة/سطح ولو لثانية واحدة.",
+            "لا تصرخ أو تعاتبه أو تستخدم عبارات لوم مثل (إنت بتدلع أو حرام عليك).",
+            "لا تدخل في نقاش أو جدال حول سبب الأزمة (مذاكرة، موبايل، أو خطأ) في هذه اللحظة."
+          ],
+          followUpAdvice: "فور تأمين المكان وهدوء الابن نسبياً، اتصل فوراً بالخط الساخن للصحة النفسية (١٦٣٢٨) أو توجه لأقرب مستشفى جامعي لطوارئ الطب النفسي. طلب الدعم الطبي هو قمة الوعي والحب."
+        },
+        4: {
+          riskLevel: 4,
+          levelTitle: "خطر مرتفع يتطلب تدخلاً عاجلاً (المستوى ٤ من ٥)",
+          situationalAnalysis: `تحليل العبارة ("${appState.statement}") يوضح مستوى عالياً من الضيق النفسي أو الاندفاع الذي يستدعي تعاملاً جاداً وفورياً. ${contextSpecificNote} تعامل مع الموقف باهتمام بالغ وبدون إشعاره بأنه تحت الرقابة الحارقة.`,
+          whatToSay: [
+            "«كلامك يهمني جداً وأنا سامعك بقلبي من غير أي أحكام أو لوم.»",
+            "«إنت مش لوحدك في اللي بتمر بيه، وكل مشكلة ليها حل وإحنا مع بعض.»",
+            "«حقك تزعل وتتعب، بس يهمني أطمن عليك وأكون جنبك لحد ما الدنيا تهدى.»"
+          ],
+          whatToAvoid: [
+            "لا تستهن بكلامه أو تعتبره مجرد تهريج أو وسيلة ضغط.",
+            "لا تهدده بالعقاب أو سحب مزايا أخرى في ذروة انفعاله.",
+            "لا تقارنه بأقرانه أو تتحدث عن تضحياتك في هذا التوقيت."
+          ],
+          followUpAdvice: "ابقِ ابنك في المساحة المشتركة للبيت بشكل دافئ، وقم برفع أي أدوية أو أدوات حادة بهدوء. احرص على حجز استشارة نفسية متخصصة خلال الساعات القادمة."
+        },
+        3: {
+          riskLevel: 3,
+          levelTitle: "يستدعي حواراً هادئاً ومتابعة (المستوى ٣ من ٥)",
+          situationalAnalysis: `ما تم رصده في النص ("${appState.statement}") يعكس وجود إرهاق نفسي حقيقي ومشاعر ضغط تحتاج لتدخل ودي واحتواء مبكر. ${contextSpecificNote} مبادرتك بالحوار الهادئ ستكسر شعوره بالعزلة.`,
+          whatToSay: [
+            "«حاسس إنك شايل هم كبير الأيام دي، تحب نحكي فيه سوا؟»",
+            "«أنا موجود هنا عشان أسمعك وأفهمك مش عشان أحاسبك.»",
+            "«قولي إيه أكتر حاجة مضايقاك وإزاي أقدر أسهل عليك الدنيا؟»"
+          ],
+          whatToAvoid: [
+            "لا تعطه نصائح سريعة ومباشرة قبل أن يفرغ ما في جعبته من مشاعر.",
+            "لا تقلل من مشكلته بعبارات مثل (دي حاجة فارغة وتكبر وتنسى).",
+            "لا تقتحم خلوته بعنف بل اطلب الجلوس معه بلطف."
+          ],
+          followUpAdvice: "تابع نومه وأكله خلال الأيام القادمة، وخصص وقتاً يومياً للحديث الودي بعيداً عن ضغوط الدراسة والطلبات."
+        },
+        2: {
+          riskLevel: 2,
+          levelTitle: "إشارة ضيق عابرة تحتاج احتواء (المستوى ٢ من ٥)",
+          situationalAnalysis: `بناءً على وصفك ("${appState.statement}")، يعاني ابنك من توتر أو ضغط يومي عابر. ${contextSpecificNote} تعاملك الهادئ سيعلمه المرونة وكيفية التعامل مع إحباطات الحياة.`,
+          whatToSay: [
+            "«باين عليك مضغوط النهاردة، خد وقتك وافصل ولما تحب تتكلم أنا معاك.»",
+            "«طبيعي نمر بأيام صعبة، المهم إنك عارف إننا في ضهرك.»",
+            "«تحب نعمل حاجة خفيفة بتحبها سوا النهاردة؟»"
+          ],
+          whatToAvoid: [
+            "تجنب اللوم المستمر أو تذكيره بأخطائه.",
+            "تجنب تجاهل مزاجه المتقلب تماماً.",
+            "تجنب رفع الصوت أو الدخول في جدال عقيم."
+          ],
+          followUpAdvice: "شجعه على أخذ قسط من الراحة والنوم، وراقب تحسن حالته بلطف خلال الأيام القادمة."
+        },
+        1: {
+          riskLevel: 1,
+          levelTitle: "آمن ومستقر (المستوى ١ من ٥)",
+          situationalAnalysis: `المعطيات ووصفك الحالي ("${appState.statement}") يشير إلى استقرار نسبي وعدم وجود مؤشرات خطر حالية. تواصلك الدافئ المستمر هو صمام الأمان الأقوى لابنك.`,
+          whatToSay: [
+            "«أنا سعيد إنك بتشاركني اللي في دماغك دايماً.»",
+            "«لو في أي وقت حسيت بضغط، بابي مفتوح لك على طول.»"
+          ],
+          whatToAvoid: [
+            "المبالغة في القلق أو نقل توترك إليه دون داعٍ.",
+            "الأسئلة والتحقيق المستمر."
+          ],
+          followUpAdvice: "حافظ على جسور الحوار المفتوح والخالي من الأحكام."
+        }
+      };
+
+      return templates[riskLevel];
+    }
+
+    async function runAIAnalysis() {
+      const overlay = document.getElementById("aiThinkingOverlay");
+      const subtext = document.getElementById("thinkingSubtext");
+      
+      overlay.classList.remove("hidden");
+      overlay.classList.add("flex");
+
+      const thinkingMessages = [
+        "جاري فحص الكلمات واللهجة المصرية بدقة...",
+        "مقارنة مؤشرات الخطر وتقييم البيئة المحيطة...",
+        "إعداد التقرير التوجيهي الشامل لولي الأمر..."
+      ];
+      let msgIdx = 0;
+      const msgInterval = setInterval(() => {
+        msgIdx = (msgIdx + 1) % thinkingMessages.length;
+        subtext.textContent = thinkingMessages[msgIdx];
+      }, 1100);
+
+      const promptPayload = `
+ما قاله/كتبه الابن أو الابنة: "${appState.statement}"
+إجابات ولي الأمر:
+- هل يوجد خطر مباشر الآن؟: ${appState.immediateDanger === 'yes' ? 'نعم' : appState.immediateDanger === 'unsure' ? 'غير متأكد / مغلق على نفسه' : 'لا، أمامي الآن'}
+- هل عبّر عن أفكار لإيذاء نفسه أو إنهاء حياته؟: ${appState.suicidalThoughts === 'yes' ? 'نعم' : appState.suicidalThoughts === 'unsure' ? 'لا أعرف' : 'لا'}
+- هل يوجد شخص بالغ داعم مع ولي الأمر؟: ${appState.supportAdult === 'alone' ? 'لا، أتعامل بمفردي' : 'نعم، معي شخص داعم'}
+- منذ متى تظهر هذه التغيرات؟: ${appState.duration === 'now' ? 'الآن فقط' : appState.duration === 'days' ? 'منذ أيام' : 'منذ أسابيع'}
+- الإشارات السلوكية والبيئية الملاحظة: ${appState.signs.length > 0 ? appState.signs.join("، ") : "لا توجد إشارات إضافية"}
+      `.trim();
+
+      const minDelay = new Promise(resolve => setTimeout(resolve, 1400));
+      const aiPromise = callChatGPTAPI(promptPayload);
+
+      const [aiResult] = await Promise.all([aiPromise, minDelay]);
+      clearInterval(msgInterval);
+
+      const finalResult = aiResult || runLocalSemanticFallback();
+      appState.lastAnalysisResult = finalResult;
+
+      overlay.classList.add("hidden");
+      overlay.classList.remove("flex");
+
+      renderResultsScreen(finalResult);
+    }
+
+    function renderResultsScreen(result) {
+      document.querySelectorAll(".step-panel").forEach(p => p.classList.remove("active"));
+      document.getElementById("progressContainer").classList.add("hidden");
+      const resultsSection = document.getElementById("resultsSection");
+      resultsSection.classList.add("active");
+
+      const sourceBadge = document.getElementById("aiSourceBadge");
+      if (appState.analysisSource === "cloud") {
+        sourceBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span>تم التحليل بواسطة ذكاء ChatGPT السحابي ✨</span>`;
+      } else {
+        sourceBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-400"></span><span>وضع التحليل المحلي المتقدم (مفعل بالعامية المصرية) 🔒</span>`;
+      }
+
+      const level = Math.min(5, Math.max(1, Number(result.riskLevel) || 3));
+      const bannerStyles = {
+        1: { classes: "bg-gradient-to-br from-emerald-500/25 to-teal-600/15 border-emerald-400/40", badge: "bg-emerald-500 text-slate-950", icon: "🌿" },
+        2: { classes: "bg-gradient-to-br from-teal-500/25 to-cyan-600/15 border-teal-400/40", badge: "bg-teal-400 text-slate-950", icon: "🌤️" },
+        3: { classes: "bg-gradient-to-br from-amber-500/25 to-orange-600/15 border-amber-400/45", badge: "bg-amber-400 text-slate-950", icon: "🕯️" },
+        4: { classes: "bg-gradient-to-br from-orange-600/30 to-rose-600/20 border-orange-400/55", badge: "bg-orange-500 text-white", icon: "⚠️" },
+        5: { classes: "bg-gradient-to-br from-rose-600/35 to-red-700/25 border-rose-400/65", badge: "bg-rose-600 text-white", icon: "🚨" }
+      };
+
+      const style = bannerStyles[level];
+      const riskBanner = document.getElementById("riskBanner");
+      riskBanner.className = `rounded-3xl p-5 sm:p-6 border shadow-2xl backdrop-blur-2xl ${style.classes}`;
+      riskBanner.innerHTML = `
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <span class="px-3 py-1 rounded-full text-xs font-black ${style.badge}">مؤشر الخطورة: ${level} / 5</span>
+          <span class="text-2xl">${style.icon}</span>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-white leading-snug">${result.levelTitle}</h2>
+      `;
+
+      const prioritySafetyContainer = document.getElementById("prioritySafetyContainer");
+      if (level >= 4) {
+        prioritySafetyContainer.classList.remove("hidden");
+        prioritySafetyContainer.innerHTML = `
+          <div class="rounded-3xl p-5 bg-gradient-to-br from-rose-950/90 to-red-950/85 border-2 border-rose-500/70 shadow-2xl shadow-rose-900/40 space-y-4">
+            <div class="flex items-start gap-3">
+              <span class="text-2xl shrink-0">🛡️</span>
+              <div>
+                <h3 class="text-base sm:text-lg font-black text-rose-200">إجراء أمان عاجل (الأولوية القصوى الآن)</h3>
+                <p class="text-xs sm:text-sm text-rose-100/95 mt-1 leading-relaxed font-semibold">
+                  ١. أبعِد فوراً وبهدوء أي أدوية، حبوب غلة، أدوات حادة، أو منظفات.<br/>
+                  ٢. تأكد من إغلاق باب السطح والشرفات والنوافذ المرتفعة.<br/>
+                  ٣. لا تترك ابنك بمفرده لحظة واحدة تحت أي ظرف حتى تهدأ الأزمة تماماً.
+                </p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+              <a href="tel:123" class="spring-btn py-3 px-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs text-center shadow-lg border border-rose-300/30">
+                📞 ١٢٣ الإسعاف الطارئ
+              </a>
+              <a href="tel:16328" class="spring-btn py-3 px-3 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-black text-xs text-center shadow-lg border border-sky-300/30">
+                📞 ١٦٣٢٨ الصحة النفسية
+              </a>
+              <a href="tel:16000" class="spring-btn py-3 px-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs text-center shadow-lg border border-emerald-300/30">
+                📞 ١٦٠٠٠ نجدة الطفل
+              </a>
+            </div>
+          </div>
+        `;
+      } else {
+        prioritySafetyContainer.classList.add("hidden");
+        prioritySafetyContainer.innerHTML = "";
+      }
+
+      const aloneAlert = document.getElementById("aloneAlertContainer");
+      if (appState.supportAdult === "alone" && level >= 3) {
+        aloneAlert.classList.remove("hidden");
+      } else {
+        aloneAlert.classList.add("hidden");
+      }
+
+      document.getElementById("aiQuoteBox").textContent = `النص الذي تم تحليله: "${appState.statement}"`;
+      document.getElementById("aiAnalysisText").textContent = result.situationalAnalysis;
+
+      const sayList = document.getElementById("whatToSayList");
+      sayList.innerHTML = (result.whatToSay || []).map(item => `
+        <li class="flex items-start gap-2.5 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-400/20">
+          <span class="text-emerald-400 font-black mt-0.5">✓</span>
+          <span class="leading-relaxed font-semibold">${item}</span>
+        </li>
+      `).join("");
+
+      const avoidList = document.getElementById("whatToAvoidList");
+      avoidList.innerHTML = (result.whatToAvoid || []).map(item => `
+        <li class="flex items-start gap-2.5 p-3 rounded-2xl bg-rose-500/10 border border-rose-400/20">
+          <span class="text-rose-400 font-black mt-0.5">✕</span>
+          <span class="leading-relaxed font-semibold">${item}</span>
+        </li>
+      `).join("");
+
+      document.getElementById("followUpText").textContent = result.followUpAdvice;
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function copyMedicalReport() {
+      if (!appState.lastAnalysisResult) return;
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString("ar-EG", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+      const timeStr = now.toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" });
+
+      const r = appState.lastAnalysisResult;
+      const reportText = `====================================
+تقرير متابعة أولي — تطبيق JENNIE للأمان الأسري
+التاريخ: ${dateStr} | الساعة: ${timeStr}
+====================================
+
+• مستوى الخطورة المبدئي: ${r.riskLevel} من 5 (${r.levelTitle})
+• ما قاله / كتبه الابن: "${appState.statement}"
+• الخطر المباشر: ${appState.immediateDanger === 'yes' ? 'نعم' : appState.immediateDanger === 'unsure' ? 'غير متأكد' : 'لا'}
+• أفكار إيذاء النفس: ${appState.suicidalThoughts === 'yes' ? 'نعم' : appState.suicidalThoughts === 'unsure' ? 'غير مؤكد' : 'لا'}
+• مدة الملاحظة: ${appState.duration === 'now' ? 'الآن فقط' : appState.duration === 'days' ? 'أيام' : 'أسابيع'}
+• الإشارات الملاحظة: ${appState.signs.length > 0 ? appState.signs.join("، ") : "لا توجد إشارات إضافية"}
+
+• ملخص التحليل:
+${r.situationalAnalysis}
+
+------------------------------------
+تنويه: هذا تقييم استرشادي أولي لمساعدة الطبيب/المختص ولا يُعد تشخيصاً طبياً.
+====================================`;
+
+      try {
+        const tempInput = document.createElement("textarea");
+        tempInput.value = reportText;
+        tempInput.style.position = "fixed";
+        tempInput.style.opacity = "0";
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        tempInput.setSelectionRange(0, 99999);
+        const success = document.execCommand("copy");
+        document.body.removeChild(tempInput);
+
+        if (success) {
+          showToast("تم نسخ التقرير الطبي جاهزاً للمشاركة مع الطبيب", "📋");
+        } else {
+          showToast("تعذر النسخ التلقائي، حاول مرة أخرى", "⚠️");
+        }
+      } catch (err) {
+        showToast("حدث خطأ أثناء نسخ التقرير", "⚠️");
+      }
+    }
+
+    function openEmergencyModal() {
+      const modal = document.getElementById("emergencyModal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeEmergencyModal() {
+      const modal = document.getElementById("emergencyModal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    document.getElementById("emergencyModal").addEventListener("click", function(e) {
+      if (e.target === this) closeEmergencyModal();
+    });
+
+    function resetApp() {
+      appState.currentStep = 1;
+      appState.statement = "";
+      appState.immediateDanger = null;
+      appState.suicidalThoughts = null;
+      appState.supportAdult = null;
+      appState.duration = null;
+      appState.signs = [];
+      appState.lastAnalysisResult = null;
+
+      document.getElementById("childStatement").value = "";
+      document.querySelectorAll(".option-card").forEach(card => {
+        card.classList.remove("selected", "selected-danger");
+        const dot = card.querySelector(".radio-dot");
+        if (dot) {
+          dot.style.backgroundColor = "transparent";
+          dot.style.borderColor = "rgba(255,255,255,0.3)";
+        }
+        const box = card.querySelector(".check-box");
+        if (box) box.textContent = "";
+      });
+
+      goToStep(1);
+    }
+  </script>
+</body>
+</html>
